@@ -40,9 +40,14 @@ func tee(input <-chan int) (<-chan int, <-chan int) {
 		defer close(out1)
 		defer close(out2)
 		for v := range input {
-			select {
-			case out1 <- v:
-			case out2 <- v:
+			for i := 0; i < 2; i++ {
+				var o1, o2 = out1, out2
+				select {
+				case o1 <- v:
+					o1 = nil
+				case o2 <- v:
+					o2 = nil
+				}
 			}
 		}
 	}()
